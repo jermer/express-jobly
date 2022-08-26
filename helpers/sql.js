@@ -1,7 +1,8 @@
 const { BadRequestError } = require("../expressError");
 
 /** 
- * dataToUpdate contains on object...
+ * dataToUpdate contains on object where each key is a JavaScript name (camel case)
+ * and each value is the new value of that parameter.
  * 
  * jsToSql contains an object where each key is a JavaScript identifier
  * (for example, "firstName") and the corresonding value is a SQL column name
@@ -34,7 +35,15 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   };
 }
 
-
+/**
+ * query contains an object with keys {nameLike, minEmployees, maxEmployees}, at
+ * least one of which contains a defined value. 
+ * 
+ * Returns a string with a properly formatted SQL 'WHERE...' clause to
+ * to the necessariy filtering.
+ * 
+ * Throws a BadRequestError if maxEmployees < minEmployees
+ */
 function sqlCompanyFilter(query) {
   // extract keys
   const { nameLike, minEmployees, maxEmployees } = query;

@@ -62,21 +62,21 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   try {
+    // get parameters from the query string
     const { nameLike, minEmployees, maxEmployees, ...rest } = req.query;
 
+    // only certain query parameters are allowed, reject the request if other
+    // query parameters are present
     if (Object.keys(rest).length !== 0) {
       throw new BadRequestError(`Request includes invalid query parameter(s): ${Object.keys(rest)}`);
     }
 
-    // This is handled by sqlCompanyFilter
-    // if (minEmployees && maxEmployees && minEmployees > maxEmployees) {
-    //   throw new BadRequestError(`minEmployess must be greater than maxEmployees`);
-    // }
-
     let companies;
     if (nameLike || minEmployees || maxEmployees) {
+      // use the given filter parameters to query
       companies = await Company.filter(req.query);
     } else {
+      // no filter parameters were given, fetch all companies
       companies = await Company.findAll();
     }
     return res.json({ companies });

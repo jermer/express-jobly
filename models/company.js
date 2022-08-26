@@ -61,14 +61,14 @@ class Company {
     return companiesRes.rows;
   }
 
-  /**
+  /** Filter companies based on given query parameters.
    * 
-   *  
+   *  Query can include: {nameLike, minEmployees, maxEmployees}
+   * 
+   *  Returns [{ handle, name, description, numEmployees, logoUrl}, ...]
    */
   static async filter(query) {
     const whereClause = sqlCompanyFilter(query);
-
-    console.log(">>>>>>", whereClause);
 
     const companiesRes = await db.query(
       `SELECT handle,
