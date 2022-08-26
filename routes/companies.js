@@ -50,8 +50,24 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  * Authorization required: none
  */
 
+//// ORIGINAL GET ROUTE
+// router.get("/", async function (req, res, next) {
+//   try {
+//     const companies = await Company.findAll();
+//     return res.json({ companies });
+//   } catch (err) {
+//     return next(err);
+//   }
+// });
+
 router.get("/", async function (req, res, next) {
   try {
+    const { nameLike, minEmployees, maxEmployees, ...rest } = req.query;
+
+    if (Object.keys(rest).length !== 0) {
+      throw new BadRequestError(`Request includes invalid query parameter(s): ${Object.keys(rest)}`);
+    }
+
     const companies = await Company.findAll();
     return res.json({ companies });
   } catch (err) {
