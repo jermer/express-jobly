@@ -68,7 +68,17 @@ router.get("/", async function (req, res, next) {
       throw new BadRequestError(`Request includes invalid query parameter(s): ${Object.keys(rest)}`);
     }
 
-    const companies = await Company.findAll();
+    // This is handled by sqlCompanyFilter
+    // if (minEmployees && maxEmployees && minEmployees > maxEmployees) {
+    //   throw new BadRequestError(`minEmployess must be greater than maxEmployees`);
+    // }
+
+    let companies;
+    if (nameLike || minEmployees || maxEmployees) {
+      companies = await Company.filter(req.query);
+    } else {
+      companies = await Company.findAll();
+    }
     return res.json({ companies });
   } catch (err) {
     return next(err);

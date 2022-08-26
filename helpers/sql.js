@@ -34,4 +34,33 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   };
 }
 
-module.exports = { sqlForPartialUpdate };
+
+function sqlCompanyFilter(query) {
+  // extract keys
+  const { nameLike, minEmployees, maxEmployees } = query;
+
+  console.log(">>>", nameLike, minEmployees, maxEmployees);
+
+  if (minEmployees && maxEmployees && minEmployees > maxEmployees) {
+    throw new BadRequestError(`minEmployess must be greater than maxEmployees`);
+  }
+
+  let filterList = [];
+
+  if (nameLike) {
+    filterList.push(`name ILIKE '%${nameLike}%'`);
+  }
+  if (minEmployees) {
+    filterList.push(`num_employees > ${minEmployees}`);
+  }
+  if (maxEmployees) {
+    filterList.push(`num_employees < ${maxEmployees}`);
+  }
+
+  let filterString = filterList.join(" AND ");
+
+  return `WHERE ${filterString}`;
+}
+
+
+module.exports = { sqlForPartialUpdate, sqlCompanyFilter };
