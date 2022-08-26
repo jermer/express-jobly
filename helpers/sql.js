@@ -39,8 +39,6 @@ function sqlCompanyFilter(query) {
   // extract keys
   const { nameLike, minEmployees, maxEmployees } = query;
 
-  console.log(">>>", nameLike, minEmployees, maxEmployees);
-
   if (minEmployees && maxEmployees && minEmployees > maxEmployees) {
     throw new BadRequestError(`minEmployess must be greater than maxEmployees`);
   }

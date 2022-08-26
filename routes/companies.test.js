@@ -66,7 +66,7 @@ describe("POST /companies", function () {
 /************************************** GET /companies */
 
 describe("GET /companies", function () {
-  test("ok for anon", async function () {
+  test("ok for anon with no filters", async function () {
     const resp = await request(app).get("/companies");
     expect(resp.body).toEqual({
       companies:
@@ -96,10 +96,10 @@ describe("GET /companies", function () {
     });
   });
 
-  test("test nameLike filter", async function () {
+  test("verify that query parameters are used correctly", async function () {
     const resp = await request(app)
       .get("/companies")
-      .query({ nameLike: 'c2' });
+      .query({ nameLike: 'c2', minEmployees: 2, maxEmployees: 2 });
     expect(resp.body).toEqual({
       companies:
         [
@@ -114,96 +114,17 @@ describe("GET /companies", function () {
     });
   });
 
-  test("test nameLike filter for case-insensitivity", async function () {
+  test("fails for max < minEmployees", async function () {
     const resp = await request(app)
       .get("/companies")
-      .query({ nameLike: 'C2' });
-    expect(resp.body).toEqual({
-      companies:
-        [
-          {
-            handle: "c2",
-            name: "C2",
-            description: "Desc2",
-            numEmployees: 2,
-            logoUrl: "http://c2.img",
-          }
-        ],
-    });
-  });
-
-  test("test minEmployees filter", async function () {
-    const resp = await request(app)
-      .get("/companies")
-      .query({ minEmployees: 2 });
-    expect(resp.body).toEqual({
-      companies:
-        [
-          {
-            handle: "c2",
-            name: "C2",
-            description: "Desc2",
-            numEmployees: 2,
-            logoUrl: "http://c2.img",
-          },
-          {
-            handle: "c3",
-            name: "C3",
-            description: "Desc3",
-            numEmployees: 3,
-            logoUrl: "http://c3.img",
-          },
-        ],
-    });
-  });
-
-  test("test maxEmployees filter", async function () {
-    const resp = await request(app)
-      .get("/companies")
-      .query({ maxEmployees: 2 });
-    expect(resp.body).toEqual({
-      companies:
-        [
-          {
-            handle: "c1",
-            name: "C1",
-            description: "Desc1",
-            numEmployees: 1,
-            logoUrl: "http://c1.img",
-          },
-          {
-            handle: "c2",
-            name: "C2",
-            description: "Desc2",
-            numEmployees: 2,
-            logoUrl: "http://c2.img",
-          },
-        ],
-    });
-  });
-
-  test("test both min and maxEmployees filter", async function () {
-    const resp = await request(app)
-      .get("/companies")
-      .query({ minEmployees: 2, maxEmployees: 2 });
-    expect(resp.body).toEqual({
-      companies:
-        [
-          {
-            handle: "c2",
-            name: "C2",
-            description: "Desc2",
-            numEmployees: 2,
-            logoUrl: "http://c2.img",
-          },
-        ],
-    });
+      .query({ minEmployees: 2, maxEmployees: 1 });
+    expect(resp.statusCode).toEqual(400);
   });
 
   test("fails for invalid query parameters", async function () {
     const resp = await request(app)
       .get("/companies")
-      .query({ minEmployees: 2, invalidParameter: 2 });
+      .query({ nameLike: 'c2', minEmployees: 2, invalidParameter: 'oops' });
     expect(resp.statusCode).toEqual(400);
   });
 
