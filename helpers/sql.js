@@ -51,10 +51,10 @@ function sqlCompanyFilter(query) {
     filterList.push(`name ILIKE '%${nameLike}%'`);
   }
   if (minEmployees) {
-    filterList.push(`num_employees > ${minEmployees}`);
+    filterList.push(`num_employees >= ${minEmployees}`);
   }
   if (maxEmployees) {
-    filterList.push(`num_employees < ${maxEmployees}`);
+    filterList.push(`num_employees <= ${maxEmployees}`);
   }
 
   let filterString = filterList.join(" AND ");
