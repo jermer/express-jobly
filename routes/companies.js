@@ -62,18 +62,20 @@ router.post("/", ensureAdmin, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   try {
-    // get parameters from the query string
+    // get parameters from the query string, if any
     const { nameLike, minEmployees, maxEmployees, ...rest } = req.query;
 
-    // only certain query parameters are allowed, reject the request if other
-    // query parameters are present
+    // only certain query parameters are allowed, reject the request
+    // if other query parameters are present
     if (Object.keys(rest).length !== 0) {
-      throw new BadRequestError(`Request includes invalid query parameter(s): ${Object.keys(rest)}`);
+      throw new BadRequestError(
+        `Request includes invalid query parameter(s): ${Object.keys(rest)}`
+      );
     }
 
     let companies;
-    if (nameLike || minEmployees || maxEmployees) {
-      // use the given filter parameters to query
+    if (Object.keys(req.query).length > 0) {
+      // use the given query parameters to filter
       companies = await Company.filter(req.query);
     } else {
       // no filter parameters were given, fetch all companies

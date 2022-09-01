@@ -52,7 +52,25 @@ router.post("/", ensureAdmin, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
     try {
-        const jobs = await Job.findAll();
+        // get filter parameters from the query string, if any
+        const { titleLike, minSalary, hasEquity, ...rest } = req.query;
+
+        // only certain query parameters are allowed, reject the request
+        // if other query parameters are present
+        if (Object.keys(rest).length !== 0) {
+            throw new BadRequestError(
+                `Request includes invalid query parameter(s): ${Object.keys(rest)}`
+            );
+        }
+
+        let jobs;
+        if (Object.keys(req.query).length > 0) {
+            // use the given query parameters to filter
+            jobs = await Job.filter(req.query);
+        } else {
+            // no filter parameters given, fetch all companies
+            jobs = await Job.findAll();
+        }
         return res.json({ jobs });
     } catch (err) {
         return next(err);
