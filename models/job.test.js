@@ -204,22 +204,23 @@ describe("update", function () {
         }
     })
 
-    test("bad request with extra update fields", async function () {
-        let result = await db.query(
-            `INSERT INTO jobs
-                    (title, salary, equity, company_handle)
-                    VALUES
-                    ('New Job', 11111, 0.11, 'c1')
-                    RETURNING id`);
-        const newJob = result.rows[0];
+    // TEST REMOVED -- the route handler checks for valid data against json schema
+    // test("bad request with extra update fields", async function () {
+    //     let result = await db.query(
+    //         `INSERT INTO jobs
+    //                 (title, salary, equity, company_handle)
+    //                 VALUES
+    //                 ('New Job', 11111, 0.11, 'c1')
+    //                 RETURNING id`);
+    //     const newJob = result.rows[0];
 
-        try {
-            await Job.update(newJob.id, { foo: "some new thing" });
-            fail();
-        } catch (err) {
-            expect(err instanceof BadRequestError).toBeTruthy();
-        }
-    });
+    //     try {
+    //         await Job.update(newJob.id, { foo: "some new thing" });
+    //         fail();
+    //     } catch (err) {
+    //         expect(err instanceof BadRequestError).toBeTruthy();
+    //     }
+    // });
 
     test("bad request with no data", async function () {
         let result = await db.query(
