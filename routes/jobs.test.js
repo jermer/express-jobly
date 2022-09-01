@@ -85,33 +85,35 @@ describe("POST /companies", function () {
 
 /************************************** GET /jobs */
 
-test("ok for anon with no filters", async function () {
-    const resp = await request(app).get("/jobs");
-    expect(resp.body).toEqual({
-        jobs:
-            [
-                {
-                    id: expect.any(Number),
-                    title: "Job 1",
-                    salary: 10000,
-                    equity: "0.1",
-                    companyHandle: "c1"
-                },
-                {
-                    id: expect.any(Number),
-                    title: "Job 2",
-                    salary: 20000,
-                    equity: "0.2",
-                    companyHandle: "c2"
-                },
-                {
-                    id: expect.any(Number),
-                    title: "Job 3",
-                    salary: 30000,
-                    equity: "0.3",
-                    companyHandle: "c3"
-                }
-            ],
+describe("GET /jobs", function () {
+    test("ok for anon with no filters", async function () {
+        const resp = await request(app).get("/jobs");
+        expect(resp.body).toEqual({
+            jobs:
+                [
+                    {
+                        id: expect.any(Number),
+                        title: "Job 1",
+                        salary: 10000,
+                        equity: "0.1",
+                        companyHandle: "c1"
+                    },
+                    {
+                        id: expect.any(Number),
+                        title: "Job 2",
+                        salary: 20000,
+                        equity: "0.2",
+                        companyHandle: "c2"
+                    },
+                    {
+                        id: expect.any(Number),
+                        title: "Job 3",
+                        salary: 30000,
+                        equity: "0.3",
+                        companyHandle: "c3"
+                    }
+                ],
+        });
     });
 });
 
@@ -141,9 +143,78 @@ describe("GET /jobs/:id", function () {
 });
 
 
+/************************************** PATCH /jobs/:id */
 
+describe("PATCH /jobs/:id", function () {
+    test("works for admin", async function () {
+        const result = await db.query(`SELECT id FROM jobs WHERE title = 'Job 1'`);
+        const jobId1 = result.rows[0].id;
 
+        const resp = await request(app)
+            .patch(`/jobs/${jobId1}`)
+            .send({
+                title: "Updated Job Title",
+            })
+            .set("authorization", `Bearer ${a1Token}`);
+        expect(resp.body).toEqual({
+            job: {
+                id: jobId1,
+                title: "Updated Job Title",
+                salary: 10000,
+                equity: "0.1",
+                companyHandle: "c1"
+            }
+        });
+    });
 
+    test("unauth for non-admin", async function () {
+        const result = await db.query(`SELECT id FROM jobs WHERE title = 'Job 1'`);
+        const jobId1 = result.rows[0].id;
+
+        const resp = await request(app)
+            .patch(`/jobs/${jobId1}`)
+            .send({
+                title: "Updated Job Title",
+            })
+            .set("authorization", `Bearer ${u1Token}`);
+        expect(resp.statusCode).toEqual(401);
+    });
+
+    test("unauth for anon", async function () {
+        const result = await db.query(`SELECT id FROM jobs WHERE title = 'Job 1'`);
+        const jobId1 = result.rows[0].id;
+
+        const resp = await request(app)
+            .patch(`/jobs/${jobId1}`)
+            .send({
+                title: "Updated Job Title",
+            });
+        expect(resp.statusCode).toEqual(401);
+    });
+
+    test("not found for no such job id", async function () {
+        const resp = await request(app)
+            .patch(`/jobs/0`)
+            .send({
+                title: "Updated Job Title",
+            })
+            .set("authorization", `Bearer ${a1Token}`);
+        expect(resp.statusCode).toEqual(404);
+    });
+
+    test("bad request on invalid data", async function () {
+        const result = await db.query(`SELECT id FROM jobs WHERE title = 'Job 1'`);
+        const jobId1 = result.rows[0].id;
+
+        const resp = await request(app)
+            .patch(`/jobs/${jobId1}`)
+            .send({
+                foo: "Extra Data Not Allowed",
+            })
+            .set("authorization", `Bearer ${a1Token}`);
+        expect(resp.statusCode).toEqual(400);
+    });
+});
 
 
 /************************************** DELETE /jobs/:id */
