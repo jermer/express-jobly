@@ -15,7 +15,6 @@ class Company {
    *
    * Throws BadRequestError if company already in database.
    * */
-
   static async create({ handle, name, description, numEmployees, logoUrl }) {
     const duplicateCheck = await db.query(
       `SELECT handle
@@ -48,7 +47,6 @@ class Company {
    *
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
-
   static async findAll() {
     const companiesRes = await db.query(
       `SELECT handle,
@@ -72,10 +70,10 @@ class Company {
 
     const companiesRes = await db.query(
       `SELECT handle,
-                  name,
-                  description,
-                  num_employees AS "numEmployees",
-                  logo_url AS "logoUrl"
+              name,
+              description,
+              num_employees AS "numEmployees",
+              logo_url AS "logoUrl"
            FROM companies
            WHERE ${filterString}
            ORDER BY name`,
@@ -90,7 +88,6 @@ class Company {
    *
    * Throws NotFoundError if not found.
    **/
-
   static async get(handle) {
     const companyRes = await db.query(
       `SELECT handle,
@@ -120,7 +117,6 @@ class Company {
    *
    * Throws NotFoundError if not found.
    */
-
   static async update(handle, data) {
     const { setCols, values } = sqlForPartialUpdate(
       data,
@@ -150,7 +146,6 @@ class Company {
    *
    * Throws NotFoundError if company not found.
    **/
-
   static async remove(handle) {
     const result = await db.query(
       `DELETE

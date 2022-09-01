@@ -2,10 +2,18 @@
 
 const db = require("../db");
 const { BadRequestError, NotFoundError } = require("../expressError");
-const { sqlForPartialUpdate } = require("../helpers/sql");
+const { sqlForPartialUpdate, sqlJobFilter } = require("../helpers/sql");
 
 class Job {
 
+    /** Create a new job from data.
+     * 
+     * Data should include { title, salary, equity, companyHandle }
+     * 
+     * Returns { id, title, salary, equity, companyHandle }
+     * 
+     * Throws BadRequestError if given companyHandle is not found in the database.
+     */
     static async create({ title, salary, equity, companyHandle }) {
         const handleCheck = await db.query(
             `SELECT handle FROM companies WHERE handle = $1`,
@@ -28,6 +36,11 @@ class Job {
         return job;
     }
 
+    /**
+     * Find all jobs.
+     * 
+     * Returns [{ id, title, salary, equtiy, companyHandle }, ...]
+     */
     static async findAll() {
         const result = await db.query(
             `SELECT
@@ -38,6 +51,33 @@ class Job {
         return result.rows;
     }
 
+    /** Filter jobs based on given query parameters.
+    * 
+    *  Query can include: {titleLike, minSalary, hasEquity}
+    * 
+    *  Returns [{ id, title, salary, equity, companyHandle }, ...]
+    */
+    static async filter(query) {
+        const { filterString, valueList } = sqlJobFilter(query);
+
+        const result = await db.query(
+            `SELECT id,
+                    title,
+                    salary,
+                    equity,
+                    company_handle AS "companyHandle"
+                 FROM jobs
+                 WHERE ${filterString}`,
+            valueList);
+        return result.rows;
+    }
+
+    /** Given a job id, return data about the job.
+     * 
+     * Returns {id, title, salary, equity, companyHandle}
+     * 
+     * Throws NotFoundError if not found.
+     */
     static async get(id) {
         const result = await db.query(
             `SELECT id, title, salary, equity,
@@ -52,7 +92,6 @@ class Job {
         return job;
     }
 
-
     /** Update job data with `data`.
      *
      * This is a "partial update" --- it's fine if data doesn't contain all the
@@ -64,16 +103,7 @@ class Job {
      *
      * Throws NotFoundError if not found.
      */
-
     static async update(id, data) {
-
-        // Unnecessary -- the validator does not allow extra properties to be included in the request
-        // const { title, salary, equity, ...rest } = data;
-
-        // if (Object.keys(rest).length !== 0) {
-        //     throw new BadRequestError(`Update fields can include: {title, salary, equity}`);
-        // }
-
         const { setCols, values } = sqlForPartialUpdate(
             data, {});
         const idVarIdx = "$" + (values.length + 1);
@@ -92,6 +122,10 @@ class Job {
         return job;
     }
 
+    /** Delete job from database given its id; returns undefined.
+    *
+    * Throws NotFoundError if not found.
+    **/
     static async remove(id) {
         const result = await db.query(
             `DELETE

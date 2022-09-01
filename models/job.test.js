@@ -92,10 +92,136 @@ describe("findAll", function () {
                 salary: 30000,
                 equity: "0.3",
                 companyHandle: "c3"
+            },
+            {
+                id: expect.any(Number),
+                title: "Job 4",
+                salary: 40000,
+                equity: "0",
+                companyHandle: "c2"
             }
         ]);
     });
 })
+
+/************************************** filter */
+
+describe("filter", function () {
+    test("verify titleLike filtering", async function () {
+        let jobs = await Job.filter(
+            { titleLike: 'Job 1' }
+        );
+        expect(jobs).toEqual([
+            {
+                id: expect.any(Number),
+                title: "Job 1",
+                salary: 10000,
+                equity: "0.1",
+                companyHandle: 'c1'
+            }
+        ]);
+
+        jobs = await Job.filter(
+            { titleLike: 'job 1' }
+        );
+        expect(jobs).toEqual([
+            {
+                id: expect.any(Number),
+                title: "Job 1",
+                salary: 10000,
+                equity: "0.1",
+                companyHandle: 'c1'
+            }
+        ]);
+
+        jobs = await Job.filter(
+            { titleLike: '1' }
+        );
+        expect(jobs).toEqual([
+            {
+                id: expect.any(Number),
+                title: "Job 1",
+                salary: 10000,
+                equity: "0.1",
+                companyHandle: 'c1'
+            }
+        ]);
+    });
+
+    test("verify minSalary filter", async function () {
+        let jobs = await Job.filter(
+            { minSalary: 30000 }
+        );
+        expect(jobs).toEqual([
+            {
+                id: expect.any(Number),
+                title: "Job 3",
+                salary: 30000,
+                equity: "0.3",
+                companyHandle: 'c3'
+            },
+            {
+                id: expect.any(Number),
+                title: "Job 4",
+                salary: 40000,
+                equity: "0",
+                companyHandle: 'c2'
+            }
+        ]);
+
+        jobs = await Job.filter(
+            { minSalary: 50000 }
+        );
+        expect(jobs).toEqual([]);
+    });
+
+    test("verify hasEquity filter", async function () {
+        let jobs = await Job.filter(
+            { hasEquity: true }
+        );
+        expect(jobs).toEqual([
+            {
+                id: expect.any(Number),
+                title: "Job 1",
+                salary: 10000,
+                equity: "0.1",
+                companyHandle: 'c1'
+            },
+            {
+                id: expect.any(Number),
+                title: "Job 2",
+                salary: 20000,
+                equity: "0.2",
+                companyHandle: 'c2'
+            },
+            {
+                id: expect.any(Number),
+                title: "Job 3",
+                salary: 30000,
+                equity: "0.3",
+                companyHandle: 'c3'
+            }
+        ]);
+    });
+
+    test("verify combined filters", async function () {
+        let jobs = await Job.filter(
+            {
+                minSalary: 25000,
+                hasEquity: true
+            }
+        );
+        expect(jobs).toEqual([
+            {
+                id: expect.any(Number),
+                title: "Job 3",
+                salary: 30000,
+                equity: "0.3",
+                companyHandle: 'c3'
+            }
+        ]);
+    })
+});
 
 /************************************** get */
 
@@ -121,6 +247,7 @@ describe("get", function () {
         }
     });
 });
+
 /************************************** update */
 
 describe("update", function () {
@@ -147,7 +274,7 @@ describe("update", function () {
             companyHandle: 'c1',
             ...updateData
         });
-    })
+    });
 
     test("works: partial update", async function () {
         let result = await db.query(
@@ -168,7 +295,7 @@ describe("update", function () {
             equity: 0.11,
             companyHandle: 'c1',
         });
-    })
+    });
 
     test("works: null fields", async function () {
         let result = await db.query(
@@ -193,7 +320,7 @@ describe("update", function () {
             equity: 0,
             companyHandle: 'c1',
         });
-    })
+    });
 
     test("not found if no such job id", async function () {
         try {
@@ -202,25 +329,7 @@ describe("update", function () {
         } catch (err) {
             expect(err instanceof NotFoundError).toBeTruthy();
         }
-    })
-
-    // TEST REMOVED -- the route handler checks for valid data against json schema
-    // test("bad request with extra update fields", async function () {
-    //     let result = await db.query(
-    //         `INSERT INTO jobs
-    //                 (title, salary, equity, company_handle)
-    //                 VALUES
-    //                 ('New Job', 11111, 0.11, 'c1')
-    //                 RETURNING id`);
-    //     const newJob = result.rows[0];
-
-    //     try {
-    //         await Job.update(newJob.id, { foo: "some new thing" });
-    //         fail();
-    //     } catch (err) {
-    //         expect(err instanceof BadRequestError).toBeTruthy();
-    //     }
-    // });
+    });
 
     test("bad request with no data", async function () {
         let result = await db.query(
