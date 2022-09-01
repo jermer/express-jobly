@@ -67,11 +67,12 @@ class Job {
 
     static async update(id, data) {
 
-        const { title, salary, equity, ...rest } = data;
+        // Unnecessary -- the validator does not allow extra properties to be included in the request
+        // const { title, salary, equity, ...rest } = data;
 
-        if (Object.keys(rest).length !== 0) {
-            throw new BadRequestError(`Update fields can include: {title, salary, equity}`);
-        }
+        // if (Object.keys(rest).length !== 0) {
+        //     throw new BadRequestError(`Update fields can include: {title, salary, equity}`);
+        // }
 
         const { setCols, values } = sqlForPartialUpdate(
             data, {});

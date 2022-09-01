@@ -11,8 +11,7 @@ const {
     commonAfterEach,
     commonAfterAll,
     u1Token,
-    a1Token,
-    job1
+    a1Token
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -20,6 +19,69 @@ beforeEach(commonBeforeEach);
 afterEach(commonAfterEach);
 afterAll(commonAfterAll);
 
+
+/************************************** POST /companies */
+
+describe("POST /companies", function () {
+    const newJob = {
+        title: "My New Job",
+        salary: 150000,
+        equity: 0.15,
+        companyHandle: "c1",
+    };
+
+    test("ok for admin", async function () {
+        const resp = await request(app)
+            .post("/jobs")
+            .send(newJob)
+            .set("authorization", `Bearer ${a1Token}`);
+        expect(resp.statusCode).toEqual(201);
+
+        newJob.equity = newJob.equity.toString();
+
+        expect(resp.body).toEqual({
+            job: {
+                id: expect.any(Number),
+                ...newJob
+            },
+        });
+    });
+
+    test("unauth for non-admin", async function () {
+        const resp = await request(app)
+            .post("/jobs")
+            .send(newJob)
+            .set("authorization", `Bearer ${u1Token}`);
+        expect(resp.statusCode).toEqual(401);
+    });
+
+    test("unauth for anon", async function () {
+        const resp = await request(app)
+            .post("/jobs")
+            .send(newJob);
+        expect(resp.statusCode).toEqual(401);
+    });
+
+    test("bad request with missing data", async function () {
+        const resp = await request(app)
+            .post("/jobs")
+            .send({})
+            .set("authorization", `Bearer ${a1Token}`);
+        expect(resp.statusCode).toEqual(400);
+    });
+
+    test("bad request with extra data", async function () {
+        const resp = await request(app)
+            .post("/jobs")
+            .send({
+                ...newJob,
+                foo: "extra data",
+            })
+            .set("authorization", `Bearer ${a1Token}`);
+        expect(resp.statusCode).toEqual(400);
+    });
+
+});
 
 /************************************** GET /jobs */
 
