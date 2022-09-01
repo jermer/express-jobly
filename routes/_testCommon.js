@@ -122,5 +122,5 @@ module.exports = {
   commonAfterAll,
   u1Token,
   u2Token,
-  a1Token
+  a1Token,
 };
