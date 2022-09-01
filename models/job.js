@@ -69,7 +69,7 @@ class Job {
 
         const { title, salary, equity, ...rest } = data;
 
-        if (rest) {
+        if (Object.keys(rest).length !== 0) {
             throw new BadRequestError(`Update fields can include: {title, salary, equity}`);
         }
 
@@ -82,7 +82,8 @@ class Job {
                             WHERE id = ${idVarIdx}
                             RETURNING id, title, salary, equity,
                             company_handle AS "companyHandle"`;
-        const result = db.query(querySql, [...values, id]);
+
+        const result = await db.query(querySql, [...values, id]);
 
         const job = result.rows[0];
         if (!job) throw new NotFoundError(`No job found with ID ${id}`);

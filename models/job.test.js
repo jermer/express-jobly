@@ -123,9 +123,121 @@ describe("get", function () {
 });
 /************************************** update */
 
-// describe("update", function () {
+describe("update", function () {
+    const updateData = {
+        title: "New Title",
+        salary: 99999,
+        equity: 0.99,
+    };
 
-// });
+    test("works", async function () {
+        let result = await db.query(
+            `INSERT INTO jobs
+                    (title, salary, equity, company_handle)
+                    VALUES
+                    ('New Job', 11111, 0.11, 'c1')
+                    RETURNING id`);
+        const newJob = result.rows[0];
+
+        let job = await Job.update(newJob.id, updateData);
+        job.equity = +job.equity;
+
+        expect(job).toEqual({
+            id: newJob.id,
+            companyHandle: 'c1',
+            ...updateData
+        });
+    })
+
+    test("works: partial update", async function () {
+        let result = await db.query(
+            `INSERT INTO jobs
+                    (title, salary, equity, company_handle)
+                    VALUES
+                    ('New Job', 11111, 0.11, 'c1')
+                    RETURNING id`);
+        const newJob = result.rows[0];
+
+        let job = await Job.update(newJob.id, { title: "Updated Title" });
+        job.equity = +job.equity;
+
+        expect(job).toEqual({
+            id: newJob.id,
+            title: "Updated Title",
+            salary: 11111,
+            equity: 0.11,
+            companyHandle: 'c1',
+        });
+    })
+
+    test("works: null fields", async function () {
+        let result = await db.query(
+            `INSERT INTO jobs
+                    (title, salary, equity, company_handle)
+                    VALUES
+                    ('New Job', 11111, 0.11, 'c1')
+                    RETURNING id`);
+        const newJob = result.rows[0];
+
+        // null out some data in the update
+        updateData.salary = null;
+        updateData.equity = null;
+
+        let job = await Job.update(newJob.id, updateData);
+        job.equity = +job.equity;
+
+        expect(job).toEqual({
+            id: newJob.id,
+            title: "New Title",
+            salary: null,
+            equity: 0,
+            companyHandle: 'c1',
+        });
+    })
+
+    test("not found if no such job id", async function () {
+        try {
+            await Job.update(0, updateData);
+            fail();
+        } catch (err) {
+            expect(err instanceof NotFoundError).toBeTruthy();
+        }
+    })
+
+    test("bad request with extra update fields", async function () {
+        let result = await db.query(
+            `INSERT INTO jobs
+                    (title, salary, equity, company_handle)
+                    VALUES
+                    ('New Job', 11111, 0.11, 'c1')
+                    RETURNING id`);
+        const newJob = result.rows[0];
+
+        try {
+            await Job.update(newJob.id, { foo: "some new thing" });
+            fail();
+        } catch (err) {
+            expect(err instanceof BadRequestError).toBeTruthy();
+        }
+    });
+
+    test("bad request with no data", async function () {
+        let result = await db.query(
+            `INSERT INTO jobs
+                    (title, salary, equity, company_handle)
+                    VALUES
+                    ('New Job', 11111, 0.11, 'c1')
+                    RETURNING id`);
+        const newJob = result.rows[0];
+
+        try {
+            await Job.update(newJob.id, {});
+            fail();
+        } catch (err) {
+            expect(err instanceof BadRequestError).toBeTruthy();
+        }
+    });
+});
 
 /************************************** remove */
 describe("remove", function () {
