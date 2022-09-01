@@ -44,30 +44,63 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
  * 
  * Throws a BadRequestError if maxEmployees < minEmployees
  */
-function sqlCompanyFilter(query) {
+function sqlCompanyFilter(dataToFilter) {
   // extract keys
-  const { nameLike, minEmployees, maxEmployees } = query;
+  const { nameLike, minEmployees, maxEmployees } = dataToFilter;
 
   if (minEmployees && maxEmployees && minEmployees > maxEmployees) {
     throw new BadRequestError(`minEmployess must be greater than maxEmployees`);
   }
 
-  let filterList = [];
+  const filterList = [];
+  const valueList = [];
 
   if (nameLike) {
-    filterList.push(`name ILIKE '%${nameLike}%'`);
+    valueList.push('%' + nameLike + '%');
+    filterList.push(`name ILIKE $${valueList.length}`);
   }
   if (minEmployees) {
-    filterList.push(`num_employees >= ${minEmployees}`);
+    valueList.push(minEmployees);
+    filterList.push(`num_employees >= $${valueList.length}`);
   }
   if (maxEmployees) {
-    filterList.push(`num_employees <= ${maxEmployees}`);
+    valueList.push(maxEmployees);
+    filterList.push(`num_employees <= $${valueList.length}`);
   }
 
   let filterString = filterList.join(" AND ");
 
-  return `WHERE ${filterString}`;
+  console.log(filterString);
+  console.log(valueList);
+
+  //return `WHERE ${filterString}`;
+  return { filterString, valueList };
 }
+
+// function sqlCompanyFilter(query) {
+//   // extract keys
+//   const { nameLike, minEmployees, maxEmployees } = query;
+
+//   if (minEmployees && maxEmployees && minEmployees > maxEmployees) {
+//     throw new BadRequestError(`minEmployess must be greater than maxEmployees`);
+//   }
+
+//   let filterList = [];
+
+//   if (nameLike) {
+//     filterList.push(`name ILIKE '%${nameLike}%'`);
+//   }
+//   if (minEmployees) {
+//     filterList.push(`num_employees >= ${minEmployees}`);
+//   }
+//   if (maxEmployees) {
+//     filterList.push(`num_employees <= ${maxEmployees}`);
+//   }
+
+//   let filterString = filterList.join(" AND ");
+
+//   return `WHERE ${filterString}`;
+// }
 
 
 module.exports = { sqlForPartialUpdate, sqlCompanyFilter };

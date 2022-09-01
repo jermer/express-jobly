@@ -68,7 +68,7 @@ class Company {
    *  Returns [{ handle, name, description, numEmployees, logoUrl}, ...]
    */
   static async filter(query) {
-    const whereClause = sqlCompanyFilter(query);
+    const { filterString, valueList } = sqlCompanyFilter(query);
 
     const companiesRes = await db.query(
       `SELECT handle,
@@ -77,8 +77,9 @@ class Company {
                   num_employees AS "numEmployees",
                   logo_url AS "logoUrl"
            FROM companies
-           ${whereClause}
-           ORDER BY name`);
+           WHERE ${filterString}
+           ORDER BY name`,
+      valueList);
     return companiesRes.rows;
   }
 

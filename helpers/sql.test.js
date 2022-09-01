@@ -58,7 +58,8 @@ describe("sql company filter", function () {
         };
 
         const result = sqlCompanyFilter(query);
-        expect(result).toEqual("WHERE name ILIKE '%foo%' AND num_employees >= 8 AND num_employees <= 12");
+        expect(result.filterString).toEqual("name ILIKE $1 AND num_employees >= $2 AND num_employees <= $3");
+        expect(result.valueList).toEqual(['%foo%', 8, 12]);
     });
 
     test("two parameters given: nameLike and minEmployees", function () {
@@ -68,7 +69,8 @@ describe("sql company filter", function () {
         };
 
         const result = sqlCompanyFilter(query);
-        expect(result).toEqual("WHERE name ILIKE '%foo%' AND num_employees >= 8");
+        expect(result.filterString).toEqual("name ILIKE $1 AND num_employees >= $2");
+        expect(result.valueList).toEqual(['%foo%', 8]);
     });
 
     test("two parameters given: nameLike and maxEmployees", function () {
@@ -78,7 +80,8 @@ describe("sql company filter", function () {
         };
 
         const result = sqlCompanyFilter(query);
-        expect(result).toEqual("WHERE name ILIKE '%foo%' AND num_employees <= 12");
+        expect(result.filterString).toEqual("name ILIKE $1 AND num_employees <= $2");
+        expect(result.valueList).toEqual(['%foo%', 12]);
     });
 
     test("two parameters given: minEmployees and maxEmployees", function () {
@@ -88,7 +91,8 @@ describe("sql company filter", function () {
         };
 
         const result = sqlCompanyFilter(query);
-        expect(result).toEqual("WHERE num_employees >= 8 AND num_employees <= 12");
+        expect(result.filterString).toEqual("num_employees >= $1 AND num_employees <= $2");
+        expect(result.valueList).toEqual([8, 12]);
     });
 
     test("one parameter given: nameLike", function () {
@@ -97,7 +101,8 @@ describe("sql company filter", function () {
         };
 
         const result = sqlCompanyFilter(query);
-        expect(result).toEqual("WHERE name ILIKE '%foo%'");
+        expect(result.filterString).toEqual("name ILIKE $1");
+        expect(result.valueList).toEqual(['%foo%']);
     });
 
     test("one parameter given: minEmployees", function () {
@@ -106,7 +111,8 @@ describe("sql company filter", function () {
         };
 
         const result = sqlCompanyFilter(query);
-        expect(result).toEqual("WHERE num_employees >= 8");
+        expect(result.filterString).toEqual("num_employees >= $1");
+        expect(result.valueList).toEqual([8]);
     });
 
     test("one parameter given: maxEmployees", function () {
@@ -115,7 +121,8 @@ describe("sql company filter", function () {
         };
 
         const result = sqlCompanyFilter(query);
-        expect(result).toEqual("WHERE num_employees <= 12");
+        expect(result.filterString).toEqual("num_employees <= $1");
+        expect(result.valueList).toEqual([12]);
     });
 
     test("throws error if max < minEmployees", function () {
