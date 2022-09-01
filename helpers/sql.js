@@ -74,9 +74,6 @@ function sqlCompanyFilter(dataToFilter) {
 
   let filterString = filterList.join(" AND ");
 
-  console.log(filterString);
-  console.log(valueList);
-
   return { filterString, valueList };
 }
 
@@ -116,11 +113,7 @@ function sqlJobFilter(dataToFilter) {
 
   let filterString = filterList.join(" AND ");
 
-  console.log(filterString);
-  console.log(valueList);
-
   return { filterString, valueList };
-
 }
 
 
