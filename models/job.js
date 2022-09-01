@@ -33,8 +33,7 @@ class Job {
             `SELECT
                 id, title, salary, equity,
                 company_handle AS "companyHandle"
-                FROM jobs
-                ORDER BY company_handle`
+                FROM jobs`
         );
         return result.rows;
     }
@@ -53,12 +52,29 @@ class Job {
         return job;
     }
 
+
+    /** Update job data with `data`.
+     *
+     * This is a "partial update" --- it's fine if data doesn't contain all the
+     * fields; this only changes provided ones.
+     *
+     * Data can include: {title, salary, equity}
+     *
+     * Returns {id, title, salary, equity, companyHandle}
+     *
+     * Throws NotFoundError if not found.
+     */
+
     static async update(id, data) {
+
+        const { title, salary, equity, ...rest } = data;
+
+        if (rest) {
+            throw new BadRequestError(`Update fields can include: {title, salary, equity}`);
+        }
+
         const { setCols, values } = sqlForPartialUpdate(
-            data,
-            {
-                companyHandle: "company_handle"
-            });
+            data, {});
         const idVarIdx = "$" + (values.length + 1);
 
         const querySql = `UPDATE jobs

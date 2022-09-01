@@ -1,8 +1,8 @@
 "use strict";
 
 const db = require("../db.js");
-const User = require("../models/user");
 const Company = require("../models/company");
+const User = require("../models/user");
 const Job = require("../models/job");
 const { createToken } = require("../helpers/tokens");
 
@@ -78,22 +78,20 @@ async function commonBeforeAll() {
   // Create some jobs
   await Job.create({
     title: "Job 1",
-    salary: "10000",
-    equity: "0.1",
+    salary: 10000,
+    equity: 0.1,
     companyHandle: "c1"
   });
-
   await Job.create({
     title: "Job 2",
-    salary: "20000",
-    equity: "0.2",
+    salary: 20000,
+    equity: 0.2,
     companyHandle: "c2"
   });
-
   await Job.create({
     title: "Job 3",
-    salary: "30000",
-    equity: "0.3",
+    salary: 30000,
+    equity: 0.3,
     companyHandle: "c3"
   });
 
