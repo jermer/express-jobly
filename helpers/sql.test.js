@@ -1,7 +1,9 @@
 
-const { sqlForPartialUpdate, sqlCompanyFilter } = require("./sql");
+const { sqlForPartialUpdate, sqlCompanyFilter, sqlJobFilter } = require("./sql");
 
 const { BadRequestError } = require("../expressError");
+
+/************************************************** SQL for partial update */
 
 describe("sql for partial update", function () {
     test("works", function () {
@@ -48,6 +50,7 @@ describe("sql for partial update", function () {
 
 });
 
+/************************************************** SQL company filter */
 
 describe("sql company filter", function () {
     test("all three parameters given", function () {
@@ -135,4 +138,20 @@ describe("sql company filter", function () {
             .toThrow(BadRequestError);
     });
 
+});
+
+/************************************************** SQL job filter */
+
+describe("sql job filter", function () {
+    test("all three parameters given", function () {
+        const query = {
+            titleLike: 'foo',
+            minSalary: 10000,
+            hasEquity: true
+        };
+
+        const result = sqlJobFilter(query);
+        expect(result.filterString).toEqual("title ILIKE $1 AND salary >= $2 AND equity > 0");
+        expect(result.valueList).toEqual(['%foo%', 10000]);
+    });
 });

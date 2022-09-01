@@ -36,15 +36,19 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
 }
 
 /**
- * query contains an object with keys {nameLike, minEmployees, maxEmployees}, at
- * least one of which contains a defined value. 
+ * dataToFilter contains an object with keys {nameLike, minEmployees, maxEmployees}. 
  * 
- * Returns a string with a properly formatted SQL 'WHERE...' clause to
- * to the necessariy filtering.
+ * Returns {filterString, valueList}
+ * filterString is a string with a properly formatted SQL 'WHERE...' clause to
+ * do the necessariy filtering. The string is parameterized to avoid
+ * SQL injection vulnerability. valueList contains the parameters.
  * 
- * Throws a BadRequestError if maxEmployees < minEmployees
+ * Throws a BadRequestError if no filter data, or if maxEmployees < minEmployees.
  */
+
 function sqlCompanyFilter(dataToFilter) {
+  if (Object.keys(dataToFilter).length === 0) throw new BadRequestError("No data");
+
   // extract keys
   const { nameLike, minEmployees, maxEmployees } = dataToFilter;
 
@@ -73,8 +77,51 @@ function sqlCompanyFilter(dataToFilter) {
   console.log(filterString);
   console.log(valueList);
 
-  //return `WHERE ${filterString}`;
   return { filterString, valueList };
 }
 
-module.exports = { sqlForPartialUpdate, sqlCompanyFilter };
+
+/**
+ * dataToFilter contains an object with keys {titleLike, minSalary, hasEquity}, at
+ * least one of which contains a defined value. 
+ * 
+ * Returns {filterString, valueList}
+ * filterString is a string with a properly formatted SQL 'WHERE...' clause to
+ * do the necessariy filtering. The string is parameterized to avoid
+ * SQL injection vulnerability. valueList contains the parameters.
+ * 
+ * Throws a BadRequestError if no filter data is provided
+ */
+
+function sqlJobFilter(dataToFilter) {
+  if (Object.keys(dataToFilter).length === 0) throw new BadRequestError("No data");
+
+  // extract keys
+  const { titleLike, minSalary, hasEquity } = dataToFilter;
+
+  const filterList = [];
+  const valueList = [];
+
+  if (titleLike) {
+    valueList.push('%' + titleLike + '%');
+    filterList.push(`title ILIKE $${valueList.length}`);
+  }
+  if (minSalary) {
+    valueList.push(minSalary);
+    filterList.push(`salary >= $${valueList.length}`);
+  }
+  if (hasEquity) {
+    filterList.push(`equity > 0`);
+  }
+
+  let filterString = filterList.join(" AND ");
+
+  console.log(filterString);
+  console.log(valueList);
+
+  return { filterString, valueList };
+
+}
+
+
+module.exports = { sqlForPartialUpdate, sqlCompanyFilter, sqlJobFilter };
