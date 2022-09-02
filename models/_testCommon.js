@@ -10,6 +10,7 @@ async function commonBeforeAll() {
   await db.query("DELETE FROM users");
 
   await db.query("DELETE FROM jobs");
+  await db.query("DELETE FROM applications");
 
   await db.query(`
     INSERT INTO companies(handle, name, num_employees, description, logo_url)
@@ -38,8 +39,21 @@ async function commonBeforeAll() {
               ('Job 3', 30000, 0.3, 'c3'),
               ('Job 4', 40000, 0,   'c2')`);
 
-}
 
+  // get job ids
+  let res = await db.query(`SELECT id FROM jobs WHERE title = 'Job 1'`);
+  const jobId1 = res.rows[0].id;
+
+  res = await db.query(`SELECT id FROM jobs WHERE title = 'Job 2'`);
+  const jobId2 = res.rows[0].id;
+
+  await db.query(`
+      INSERT INTO applications (username, job_id)
+      VALUES ('u1', $1),
+             ('u1', $2)`,
+    [jobId1, jobId2]);
+
+}
 async function commonBeforeEach() {
   await db.query("BEGIN");
 }

@@ -140,6 +140,17 @@ describe("get", function () {
       lastName: "U1L",
       email: "u1@email.com",
       isAdmin: false,
+      jobs: [expect.any(Number), expect.any(Number)]
+    });
+
+    user = await User.get("u2");
+    expect(user).toEqual({
+      username: "u2",
+      firstName: "U2F",
+      lastName: "U2L",
+      email: "u2@email.com",
+      isAdmin: false,
+      jobs: []
     });
   });
 
@@ -236,13 +247,13 @@ describe("apply", function () {
     let res = await db.query(`SELECT id FROM jobs WHERE title = 'Job 1'`);
     const jobId = res.rows[0].id;
 
-    await User.apply("u1", jobId);
+    await User.apply("u2", jobId);
 
     res = await db.query(
-      `SELECT username, job_id AS "jobId" FROM applications`);
+      `SELECT username, job_id AS "jobId" FROM applications WHERE username = 'u2'`);
 
     expect(res.rows.length).toEqual(1);
-    expect(res.rows[0].username).toEqual("u1");
+    expect(res.rows[0].username).toEqual("u2");
     expect(res.rows[0].jobId).toEqual(jobId);
   });
 
