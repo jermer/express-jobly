@@ -384,3 +384,65 @@ describe("DELETE /users/:username", function () {
     expect(resp.statusCode).toEqual(404);
   });
 });
+
+
+/************************************** POST /users/:username/jobs/:id */
+
+describe("POST /users/:username/jobs/:id", function () {
+  test("works for admin", async function () {
+    const result = await db.query(`SELECT id FROM jobs WHERE title = 'Job 1'`);
+    const jobId1 = result.rows[0].id;
+
+    const resp = await request(app)
+      .post(`/users/u1/jobs/${jobId1}`)
+      .set("authorization", `Bearer ${a1Token}`);
+    expect(resp.body).toEqual({ applied: jobId1 });
+  });
+
+  test("works for users", async function () {
+    const result = await db.query(`SELECT id FROM jobs WHERE title = 'Job 1'`);
+    const jobId1 = result.rows[0].id;
+
+    const resp = await request(app)
+      .post(`/users/u1/jobs/${jobId1}`)
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.body).toEqual({ applied: jobId1 });
+  });
+
+  test("unauth for wrong user", async function () {
+    const result = await db.query(`SELECT id FROM jobs WHERE title = 'Job 1'`);
+    const jobId1 = result.rows[0].id;
+
+    const resp = await request(app)
+      .post(`/users/u1/jobs/${jobId1}`)
+      .set("authorization", `Bearer ${u2Token}`);
+    expect(resp.statusCode).toEqual(401);
+  });
+
+  test("unauth for anon", async function () {
+    const result = await db.query(`SELECT id FROM jobs WHERE title = 'Job 1'`);
+    const jobId1 = result.rows[0].id;
+
+    const resp = await request(app)
+      .post(`/users/u1/jobs/${jobId1}`);
+    expect(resp.statusCode).toEqual(401);
+  });
+
+  test("not found if invalid user", async function () {
+    const result = await db.query(`SELECT id FROM jobs WHERE title = 'Job 1'`);
+    const jobId1 = result.rows[0].id;
+
+    const resp = await request(app)
+      .post(`/users/nope/jobs/${jobId1}`)
+      .set("authorization", `Bearer ${a1Token}`);
+    expect(resp.statusCode).toEqual(404);
+  });
+
+  test("not found if invalid job id", async function () {
+    const resp = await request(app)
+      .post(`/users/u1/jobs/0`)
+      .set("authorization", `Bearer ${a1Token}`);
+    expect(resp.statusCode).toEqual(404);
+  });
+
+});

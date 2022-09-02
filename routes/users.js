@@ -134,4 +134,30 @@ router.delete("/:username", ensureLoggedIn, async function (req, res, next) {
 });
 
 
+/** POST /[username]/jobs/[id] => {applied: id}
+ * 
+ * Allows user with given username to apply for a job with given job id.
+ * Admin users can apply on behalf of any user.
+ * 
+ * Authorization required: login or admin
+ */
+
+router.post("/:username/jobs/:id", ensureLoggedIn, async function (req, res, next) {
+  try {
+    const { username, id } = req.params;
+
+    // verify that the logged-in user has credentials to access this route
+    if (username !== res.locals.user.username && !res.locals.user.isAdmin) {
+      throw new UnauthorizedError();
+    }
+
+    await User.apply(username, id);
+    return res.json({ applied: +id });
+
+  } catch (err) {
+    return next(err);
+  }
+
+});
+
 module.exports = router;
