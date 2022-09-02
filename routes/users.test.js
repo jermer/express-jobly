@@ -207,6 +207,7 @@ describe("GET /users/:username", function () {
         lastName: "U1L",
         email: "user1@user.com",
         isAdmin: false,
+        jobs: [expect.any(Number), expect.any(Number)]
       },
     });
   });
@@ -222,6 +223,7 @@ describe("GET /users/:username", function () {
         lastName: "U1L",
         email: "user1@user.com",
         isAdmin: false,
+        jobs: [expect.any(Number), expect.any(Number)]
       },
     });
   });
@@ -390,50 +392,50 @@ describe("DELETE /users/:username", function () {
 
 describe("POST /users/:username/jobs/:id", function () {
   test("works for admin", async function () {
-    const result = await db.query(`SELECT id FROM jobs WHERE title = 'Job 1'`);
-    const jobId1 = result.rows[0].id;
+    const result = await db.query(`SELECT id FROM jobs WHERE title = 'Job 3'`);
+    const jobId = result.rows[0].id;
 
     const resp = await request(app)
-      .post(`/users/u1/jobs/${jobId1}`)
+      .post(`/users/u1/jobs/${jobId}`)
       .set("authorization", `Bearer ${a1Token}`);
-    expect(resp.body).toEqual({ applied: jobId1 });
+    expect(resp.body).toEqual({ applied: jobId });
   });
 
   test("works for users", async function () {
-    const result = await db.query(`SELECT id FROM jobs WHERE title = 'Job 1'`);
-    const jobId1 = result.rows[0].id;
+    const result = await db.query(`SELECT id FROM jobs WHERE title = 'Job 3'`);
+    const jobId = result.rows[0].id;
 
     const resp = await request(app)
-      .post(`/users/u1/jobs/${jobId1}`)
+      .post(`/users/u1/jobs/${jobId}`)
       .set("authorization", `Bearer ${u1Token}`);
-    expect(resp.body).toEqual({ applied: jobId1 });
+    expect(resp.body).toEqual({ applied: jobId });
   });
 
   test("unauth for wrong user", async function () {
-    const result = await db.query(`SELECT id FROM jobs WHERE title = 'Job 1'`);
-    const jobId1 = result.rows[0].id;
+    const result = await db.query(`SELECT id FROM jobs WHERE title = 'Job 3'`);
+    const jobId = result.rows[0].id;
 
     const resp = await request(app)
-      .post(`/users/u1/jobs/${jobId1}`)
+      .post(`/users/u1/jobs/${jobId}`)
       .set("authorization", `Bearer ${u2Token}`);
     expect(resp.statusCode).toEqual(401);
   });
 
   test("unauth for anon", async function () {
-    const result = await db.query(`SELECT id FROM jobs WHERE title = 'Job 1'`);
-    const jobId1 = result.rows[0].id;
+    const result = await db.query(`SELECT id FROM jobs WHERE title = 'Job 3'`);
+    const jobId = result.rows[0].id;
 
     const resp = await request(app)
-      .post(`/users/u1/jobs/${jobId1}`);
+      .post(`/users/u1/jobs/${jobId}`);
     expect(resp.statusCode).toEqual(401);
   });
 
   test("not found if invalid user", async function () {
-    const result = await db.query(`SELECT id FROM jobs WHERE title = 'Job 1'`);
-    const jobId1 = result.rows[0].id;
+    const result = await db.query(`SELECT id FROM jobs WHERE title = 'Job 3'`);
+    const jobId = result.rows[0].id;
 
     const resp = await request(app)
-      .post(`/users/nope/jobs/${jobId1}`)
+      .post(`/users/nope/jobs/${jobId}`)
       .set("authorization", `Bearer ${a1Token}`);
     expect(resp.statusCode).toEqual(404);
   });
@@ -444,5 +446,21 @@ describe("POST /users/:username/jobs/:id", function () {
       .set("authorization", `Bearer ${a1Token}`);
     expect(resp.statusCode).toEqual(404);
   });
+
+  test("internal error if duplicate application", async function () {
+    const result = await db.query(`SELECT id FROM jobs WHERE title = 'Job 3'`);
+    const jobId = result.rows[0].id;
+
+    let resp = await request(app)
+      .post(`/users/u1/jobs/${jobId}`)
+      .set("authorization", `Bearer ${a1Token}`);
+    resp = await request(app)
+      .post(`/users/u1/jobs/${jobId}`)
+      .set("authorization", `Bearer ${a1Token}`);
+
+    expect(resp.statusCode).toEqual(500);
+
+  });
+
 
 });

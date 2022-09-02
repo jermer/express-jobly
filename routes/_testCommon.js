@@ -95,6 +95,19 @@ async function commonBeforeAll() {
     companyHandle: "c3"
   });
 
+  // Create some applications
+  // get job ids, so that we know they are current
+  let res = await db.query(`SELECT id FROM jobs WHERE title = 'Job 1'`);
+  const jobId1 = res.rows[0].id;
+
+  res = await db.query(`SELECT id FROM jobs WHERE title = 'Job 2'`);
+  const jobId2 = res.rows[0].id;
+
+  // add sample job applications
+  await User.apply('u1', jobId1);
+  await User.apply('u1', jobId2);
+
+
 }
 
 async function commonBeforeEach() {

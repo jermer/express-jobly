@@ -40,13 +40,14 @@ async function commonBeforeAll() {
               ('Job 4', 40000, 0,   'c2')`);
 
 
-  // get job ids
+  // get job ids, so that we know they are current
   let res = await db.query(`SELECT id FROM jobs WHERE title = 'Job 1'`);
   const jobId1 = res.rows[0].id;
 
   res = await db.query(`SELECT id FROM jobs WHERE title = 'Job 2'`);
   const jobId2 = res.rows[0].id;
 
+  // add sample job applications
   await db.query(`
       INSERT INTO applications (username, job_id)
       VALUES ('u1', $1),
